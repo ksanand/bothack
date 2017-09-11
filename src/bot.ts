@@ -52,9 +52,23 @@ bot.dialog('/luisList', (session, args) => {
 	console.log(args.intent.entities)
 	if (statusEntity) {
     	const status = statusEntity.entity;
-    	console.log(statusEntity)
-        const results = testresults.filter(test => test.status === (statusEntity as any).resolution.values[0]);
-        session.send(results.map(testresults => testresults.name).join(", "));
+    	console.log(statusEntity);
+    	const rslt = (statusEntity as any).resolution.values[0];
+        const results = testresults.filter(test => test.status === rslt);
+        var resultList = results.map(function (r) { return '* ' + r.name + ' (Status: ' + r.step_failed + ')'; })
+        .join('<br>');
+        var reply = new builder.Message();
+       
+        reply.attachments([
+        	new builder.HeroCard(session)
+            	.title('These are the tests that ' + rslt)
+            	.text(resultList)
+            	.buttons([
+                	builder.CardAction.imBack(session, "More Info", "More Info")
+                ])
+            ]);
+
+        session.send(reply);
     } else {
         session.send("you'll need to say 'failed' or 'passed'")
     }
