@@ -37,10 +37,20 @@ bot.dialog('/extract', (session, args) => {
     matches: /^where is (.*)$/i
 });
 
+//bot.dialog('/list', (session, args) => {
+//    const status = args.intent.matched[1].trim();
+//    const results = tests.filter(test => test.status === status);
+//    session.send(results.map(tests => tests.name).join(", "));
+//})
+//.triggerAction({
+//    matches: /^which tests (failed|passed) today$/i
+//});
+
 bot.dialog('/list', (session, args) => {
     const status = args.intent.matched[1].trim();
-    const results = tests.filter(test => test.status === status);
-    session.send(results.map(tests => tests.name).join(", "));
+    const results = testresults.filter(test => test.status === status);
+    session.send(results.map(testresults => testresults.name).join(", "));
+    //session.send("blah");  
 })
 .triggerAction({
     matches: /^which tests (failed|passed) today$/i
@@ -79,3 +89,40 @@ const tests: Test[] = [{
     status: "passed"
 }];
 
+interface TestResults {
+    name: string;
+    status: "failed" | "passed";
+    step_failed: string;
+    instance: integer;
+}
+
+const testresults: TestResults[] = [
+{
+    name: "database check.feature",
+    status: "failed",
+    step_failed: "Connectivity failure",
+    instance: 1
+}, {
+    name: "sanity check.feature",
+    status: "passed",
+    step_failed: "None",
+    instance: 1
+}, {
+    name: "load testing mailguard.feature",
+    status: "failed",
+    step_failed: "Virus daemon died",
+    instance: 1
+}
+];
+
+
+const testcases: TestCases[] = [{
+    name: "database check.feature",
+    description: "Checks for database access for mailguard"
+}, {
+    name: "sanity check.feature",
+    description: "Checks for sanity of mailguard virus detection"
+}, {
+    name: "load testing mailguard.feature",
+    description: "mailguard can process 20000 emails/min"
+}];
