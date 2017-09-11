@@ -37,15 +37,24 @@ bot.dialog('/extract', (session, args) => {
     matches: /^where is (.*)$/i
 });
 
-// bot.dialog('/list', (session, args) => {
-//     const status = args.intent.matched[1].trim();
-//     const results = testresults.filter(test => test.status === status);
-//     session.send(results.map(testresults => testresults.name).join(", "));
-//     //session.send("blah");  
-// })
-// .triggerAction({
-//     matches: /^which tests (failed|passed) today$/i
-// });
+bot.dialog('/failing_tests_howlong', (session, args) => {
+    const status = args.intent.matched[1].trim();
+    //const results = testresults.filter(test => test.status === status);
+    session.send("Like forever. Please consider fixing this as I am quite annoyed with this failure!");
+})
+.triggerAction({
+    matches: /(.+) fail duration/i
+});
+
+
+bot.dialog('/rerun_tests', (session, args) => {
+    const status = args.intent.matched[1].trim();
+    //const results = testresults.filter(test => test.status === status);
+    session.send("Test scheduled for rerun. Check in later to check for the results of these tests.");
+})
+.triggerAction({
+    matches: /rerun tests (.+)/i
+});
 
 bot.dialog('/luisList', (session, args) => {
 	const statusEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'test status');
@@ -72,10 +81,20 @@ bot.dialog('/luisList', (session, args) => {
     } else {
         session.send("you'll need to say 'failed' or 'passed'")
     }
-})
+})  
 .triggerAction({
     matches: 'Test Results'
 });
+
+bot.dialog('/testinfo', (session, args) => {
+    const name = args.intent.matched[1].trim();
+    const results = testcases.filter(test => test.name === name);
+    session.send(results.map(testcases => testcases.description).join(", "));
+})
+.triggerAction({
+    matches: /test info (.+)/i
+});
+
 
 interface TestResults {
     name: string;
@@ -85,19 +104,34 @@ interface TestResults {
 }
 
 const testresults: TestResults[] = [{
-    name: "database check.feature",
+    name: "database_check.feature",
     status: "failed",
     step_failed: "Connectivity failure",
     instance: 1
 }, {
-    name: "sanity check.feature",
+    name: "sanity_check.feature",
     status: "passed",
     step_failed: "None",
     instance: 1
 }, {
-    name: "load testing mailguard.feature",
+    name: "load_testing_mailguard.feature",
     status: "failed",
     step_failed: "Virus daemon died",
+    instance: 1
+}, {
+    name: "integration_with_console.feature",
+    status: "passed",
+    step_failed: "",
+    instance: 1
+}, {
+    name: "operations.feature",
+    status: "failed",
+    step_failed: "Virusd daemon failed",
+    instance: 1
+}, {
+    name: "common_configs.feature",
+    status: "failed",
+    step_failed: "Virusd daemon failed",
     instance: 1
 }];
 
@@ -107,14 +141,23 @@ interface TestCase {
 }
 
 const testcases: TestCase[] = [{
-    name: "database check.feature",
+    name: "database_check.feature",
     description: "Checks for database access for mailguard"
 }, {
-    name: "sanity check.feature",
+    name: "sanity_check.feature",
     description: "Checks for sanity of mailguard virus detection"
 }, {
-    name: "load testing mailguard.feature",
+    name: "load_testing_mailguard.feature",
     description: "mailguard can process 20000 emails/min"
+}, {
+    name: "integration_with_console.feature",
+    description: "Mailguard console integration"
+}, {
+    name: "operations.feature",
+    description: "Operational tests"
+}, {
+    name: "common_configs.feature",
+    description: "mailguard common configs"
 }];
 
 let tagName: string;
