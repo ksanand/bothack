@@ -53,7 +53,7 @@ bot.dialog('/luisList', (session, args) => {
 	if (statusEntity) {
     	const status = statusEntity.entity;
     	console.log(statusEntity)
-        const results = testresults.filter(test => test.status === statusEntity.resolution.values[0]);
+        const results = testresults.filter(test => test.status === (statusEntity as any).resolution.values[0]);
         session.send(results.map(testresults => testresults.name).join(", "));
     } else {
         session.send("you'll need to say 'failed' or 'passed'")
@@ -63,20 +63,14 @@ bot.dialog('/luisList', (session, args) => {
     matches: 'Test Results'
 });
 
-interface Test {
-    name: string;
-    status: "failed" | "passed";
-}
-
 interface TestResults {
     name: string;
     status: "failed" | "passed";
     step_failed: string;
-    instance: integer;
+    instance: number;
 }
 
-const testresults: TestResults[] = [
-{
+const testresults: TestResults[] = [{
     name: "database check.feature",
     status: "failed",
     step_failed: "Connectivity failure",
@@ -91,11 +85,14 @@ const testresults: TestResults[] = [
     status: "failed",
     step_failed: "Virus daemon died",
     instance: 1
+}];
+
+interface TestCase {
+    name: string;
+    description: string;
 }
-];
 
-
-const testcases: TestCases[] = [{
+const testcases: TestCase[] = [{
     name: "database check.feature",
     description: "Checks for database access for mailguard"
 }, {
@@ -105,3 +102,24 @@ const testcases: TestCases[] = [{
     name: "load testing mailguard.feature",
     description: "mailguard can process 20000 emails/min"
 }];
+
+let tagName: string;
+
+bot.dialog('/addTag', [
+    (session, args, next) => {
+        const tagEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'Tag Name');
+        if (tagEntity) {
+            tagName = tagEntity.entity;
+            return next();
+        }
+        builder.Prompts.text(session, "What do you want to call this tag?");
+    },
+    (session, args, next) => {
+        if (!tagName) {
+            tagName = args.response;
+        }
+        session.send(`I created a tag called ${tagName}.`);
+    }
+]).triggerAction({
+    matches: 'Add Tag'
+});
