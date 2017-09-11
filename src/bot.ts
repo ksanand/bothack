@@ -19,6 +19,9 @@ const bot = new builder.UniversalBot(connector, (session) => {
     session.send("Sorry, I didn't understand that.")
 });
 
+
+bot.recognizer(new builder.LuisRecognizer(process.env.LUIS_MODEL_URL));
+
 bot.dialog('/helloworld', (session) => {
     session.send("Hello, World");
 })
@@ -41,6 +44,20 @@ bot.dialog('/list', (session, args) => {
 })
 .triggerAction({
     matches: /^which tests (failed|passed) today$/i
+});
+
+bot.dialog('/luisList', (session, args) => {
+    const statusEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'status');   
+    if (statusEntity) {
+        const status = statusEntity.entity;
+        const results = tests.filter(test => test.status === status);
+        session.send(results.map(tests => tests.name).join(", "));
+    } else {
+        session.send("you'll need to say 'failed' or 'passed'")
+    }
+})
+.triggerAction({
+    matches: 'YourLuisIntentHere'
 });
 
 interface Test {
