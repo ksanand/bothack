@@ -37,27 +37,29 @@ bot.dialog('/extract', (session, args) => {
     matches: /^where is (.*)$/i
 });
 
-bot.dialog('/list', (session, args) => {
-    const status = args.intent.matched[1].trim();
-    const results = tests.filter(test => test.status === status);
-    session.send(results.map(tests => tests.name).join(", "));
-})
-.triggerAction({
-    matches: /^which tests (failed|passed) today$/i
-});
+// bot.dialog('/list', (session, args) => {
+//     const status = args.intent.matched[1].trim();
+//     const results = tests.filter(test => test.status === status);
+//     session.send(results.map(tests => tests.name).join(", "));
+// })
+// .triggerAction({
+//     matches: /^which tests (failed|passed) today$/i
+// });
 
 bot.dialog('/luisList', (session, args) => {
-    const statusEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'status');   
-    if (statusEntity) {
-        const status = statusEntity.entity;
-        const results = tests.filter(test => test.status === status);
+	const statusEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'test status');
+	console.log(args.intent.entities)
+	if (statusEntity) {
+    	const status = statusEntity.entity;
+    	console.log(statusEntity)
+        const results = tests.filter(test => test.status === statusEntity.resolution.values[0]);
         session.send(results.map(tests => tests.name).join(", "));
     } else {
         session.send("you'll need to say 'failed' or 'passed'")
     }
 })
 .triggerAction({
-    matches: 'YourLuisIntentHere'
+    matches: 'Test Results'
 });
 
 interface Test {
@@ -66,16 +68,16 @@ interface Test {
 }
 
 const tests: Test[] = [{
-    name: "Dependency Injection",
+    name: "Bad test",
     status: "failed"
 }, {
-    name: "Input/Output",
+    name: "Good test",
     status: "passed"
 }, {
-    name: "Database",
+    name: "Dodgy test",
     status: "failed"
 }, {
-    name: "Server",
+    name: "Valid test",
     status: "passed"
 }];
 
