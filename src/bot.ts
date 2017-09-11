@@ -107,7 +107,7 @@ let tagName: string;
 
 bot.dialog('/addTag', [
     (session, args, next) => {
-        const tagEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'Tag Name');
+        const tagEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'tagName');
         if (tagEntity) {
             tagName = tagEntity.entity;
             return next();
