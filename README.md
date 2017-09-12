@@ -8,6 +8,7 @@
 
     MICROSOFT_APP_ID = app_id_you_got_when_you_registered_your_bot  
     MICROSOFT_APP_PASSWORD = app_password_you_got_when_you_registered_your_bot
+    LUIS_MODEL_URL = url_from_luis_when_registering
 
 2. Configure
 
