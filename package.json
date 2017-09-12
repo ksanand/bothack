@@ -20,6 +20,7 @@
     "@types/dotenv": "^4.0.1",
     "@types/restify": "^5.0.2",
     "botbuilder": "^3.9.1",
+    "botbuilder-teams": "^0.1.6",
     "dotenv": "^4.0.0",
     "restify": "^5.2.0"
   },
