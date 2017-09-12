@@ -24,6 +24,7 @@ bot.recognizer(new builder.LuisRecognizer(process.env.LUIS_MODEL_URL));
 
 bot.dialog('/helloworld', (session) => {
     session.send("Hello, World");
+    session.endDialog();
 })
 .triggerAction({
     matches: /^hello$/i
@@ -32,6 +33,7 @@ bot.dialog('/helloworld', (session) => {
 bot.dialog('/extract', (session, args) => {
     const place = args.intent.matched[1].trim();
     session.send(`Wherever you go, ${place} is in your heart`)
+    session.endDialog();
 })
 .triggerAction({
     matches: /^where is (.*)$/i
