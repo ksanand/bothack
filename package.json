@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/billba/bot-scaffold"
   },
-  "main": "bot.js",
+  "main": "dist/bot.js",
   "scripts": {
     "typings": "typings install",
     "build": "tsc",
