@@ -14,10 +14,13 @@ server.listen(process.env['port'] || process.env['PORT'] || 3978, '::', function
 });
 server.post('/api/messages', connector.listen());
 var bot = new builder.UniversalBot(connector, function (session) {
+    console.log('Unknown request', session.message);
     session.send("Sorry, I didn't understand that.");
 });
+console.log('Operating ...');
 bot.recognizer(new builder.LuisRecognizer(process.env.LUIS_MODEL_URL));
 bot.dialog('/helloworld', function (session) {
+    console.log('Hello:', session.message);
     session.send("Hello, World");
     session.endDialog();
 })

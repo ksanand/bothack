@@ -16,13 +16,16 @@ server.listen(process.env['port'] || process.env['PORT'] || 3978, '::', () =>
 server.post('/api/messages', connector.listen());
 
 const bot = new builder.UniversalBot(connector, (session) => {
-    session.send("Sorry, I didn't understand that.")
+	console.log('Unknown request', session.message);
+	session.send("Sorry, I didn't understand that.")
 });
 
+console.log('Operating ...');
 
 bot.recognizer(new builder.LuisRecognizer(process.env.LUIS_MODEL_URL));
 
 bot.dialog('/helloworld', (session) => {
+	console.log('Hello:', session.message);
     session.send("Hello, World");
     session.endDialog();
 })
