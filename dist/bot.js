@@ -19,6 +19,7 @@ var bot = new builder.UniversalBot(connector, function (session) {
 bot.recognizer(new builder.LuisRecognizer(process.env.LUIS_MODEL_URL));
 bot.dialog('/helloworld', function (session) {
     session.send("Hello, World");
+    session.endDialog();
 })
     .triggerAction({
     matches: /^hello$/i
@@ -26,6 +27,7 @@ bot.dialog('/helloworld', function (session) {
 bot.dialog('/extract', function (session, args) {
     var place = args.intent.matched[1].trim();
     session.send("Wherever you go, " + place + " is in your heart");
+    session.endDialog();
 })
     .triggerAction({
     matches: /^where is (.*)$/i
@@ -52,11 +54,13 @@ bot.dialog('/rerun_tests', function (session, args) {
             var msg = new builder.Message().address(session.privateConversationData.address).text(testRerun[0].name + testRerun[0].status);
             bot.send(msg);
             clearInterval(interval);
+            session.endDialog();
         }
     }, 1 * 1000);
     setTimeout(function () {
         console.log("Setting status of test " + testRerun[0].name);
         testRerun[0].status = "passed";
+        session.endDialog();
     }, 4 * 1000);
 })
     .triggerAction({
@@ -83,9 +87,11 @@ bot.dialog('/luisList', function (session, args) {
             ]));
         }
         session.send(reply);
+        session.endDialog();
     }
     else {
         session.send("you'll need to say 'failed' or 'passed'");
+        session.endDialog();
     }
 })
     .triggerAction({
@@ -95,6 +101,7 @@ bot.dialog('/testinfo', function (session, args) {
     var name = args.intent.matched[1].trim();
     var results = testcases.filter(function (test) { return test.name === name; });
     session.send(results.map(function (testcases) { return testcases.description; }).join(", "));
+    session.endDialog();
 })
     .triggerAction({
     matches: /test info (.+)/i
@@ -175,8 +182,10 @@ bot.dialog('/addTag', [
         if (args.response === false) {
             session.send("Ok. Won't create a tag yet. Cheers!");
             return;
+            session.endDialog();
         }
         session.send("I created a tag called " + session.dialogData.tagName + ".");
+        session.endDialog();
     },
 ]).triggerAction({
     matches: 'Add Tag'

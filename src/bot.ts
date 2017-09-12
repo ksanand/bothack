@@ -63,12 +63,14 @@ bot.dialog('/rerun_tests', (session, args) => {
             const msg = new builder.Message().address(session.privateConversationData.address).text(testRerun[0].name + testRerun[0].status);
             bot.send(msg);
             clearInterval(interval);
+            session.endDialog();
         }
     }, 1*1000);
 
     setTimeout(() => {
         console.log("Setting status of test " + testRerun[0].name);
         testRerun[0].status = "passed"
+        session.endDialog();
     }, 4*1000);
 })
 .triggerAction({
@@ -99,8 +101,10 @@ bot.dialog('/luisList', (session, args) => {
     	}
 
         session.send(reply);
+        session.endDialog();
     } else {
         session.send("you'll need to say 'failed' or 'passed'")
+        session.endDialog();
     }
 })  
 .triggerAction({
@@ -111,6 +115,7 @@ bot.dialog('/testinfo', (session, args) => {
     const name = args.intent.matched[1].trim();
     const results = testcases.filter(test => test.name === name);
     session.send(results.map(testcases => testcases.description).join(", "));
+    session.endDialog();
 })
 .triggerAction({
     matches: /test info (.+)/i
@@ -208,8 +213,10 @@ bot.dialog('/addTag', [
         if (args.response === false) {
             session.send("Ok. Won't create a tag yet. Cheers!");
             return;
+            session.endDialog();
         }
         session.send(`I created a tag called ${session.dialogData.tagName}.`);
+        session.endDialog();
     },
 ]).triggerAction({
     matches: 'Add Tag'
