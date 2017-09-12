@@ -54,17 +54,18 @@ bot.dialog('/luisList', function (session, args) {
         console.log(statusEntity);
         var rslt_1 = statusEntity.resolution.values[0];
         var results = testresults.filter(function (test) { return test.status === rslt_1; });
-        var resultList = results.map(function (r) { return '* ' + r.name + ' (Status: ' + r.step_failed + ')'; })
-            .join('<br>');
-        var reply = new builder.Message();
-        reply.attachments([
-            new builder.HeroCard(session)
-                .title('These are the tests that ' + rslt_1)
-                .text(resultList)
+        //var resultList = results.map(function (r) { return '* ' + r.name + ' (Status: ' + r.step_failed + ')'; })
+        //.join('<br>');
+        var reply = new builder.Message(session);
+        reply.attachmentLayout(builder.AttachmentLayout.carousel);
+        for (var i = 0; i < results.length; i++) {
+            reply.addAttachment(new builder.HeroCard(session)
+                .title(results[i].name)
+                .text('Status: ' + results[i].step_failed)
                 .buttons([
-                builder.CardAction.imBack(session, "More Info", "More Info")
-            ])
-        ]);
+                builder.CardAction.imBack(session, 'test info ' + results[i].name, "Test Info")
+            ]));
+        }
         session.send(reply);
     }
     else {
