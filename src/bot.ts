@@ -1,4 +1,5 @@
 import * as builder from 'botbuilder';
+import { StripBotAtMentions } from 'botbuilder-teams';
 import { createServer } from 'restify';
 import { config } from 'dotenv';
 
@@ -20,7 +21,8 @@ const bot = new builder.UniversalBot(connector, (session) => {
 	session.send("Sorry, I didn't understand that.")
 });
 
-console.log('Operating ...');
+bot.use(new StripBotAtMentions());
+
 
 bot.recognizer(new builder.LuisRecognizer(process.env.LUIS_MODEL_URL));
 

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var builder = require("botbuilder");
+var botbuilder_teams_1 = require("botbuilder-teams");
 var restify_1 = require("restify");
 var dotenv_1 = require("dotenv");
 dotenv_1.config();
@@ -17,7 +18,7 @@ var bot = new builder.UniversalBot(connector, function (session) {
     console.log('Unknown request', session.message);
     session.send("Sorry, I didn't understand that.");
 });
-console.log('Operating ...');
+bot.use(new botbuilder_teams_1.StripBotAtMentions());
 bot.recognizer(new builder.LuisRecognizer(process.env.LUIS_MODEL_URL));
 bot.dialog('/helloworld', function (session) {
     console.log('Hello:', session.message);
