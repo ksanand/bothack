@@ -24,6 +24,7 @@ bot.recognizer(new builder.LuisRecognizer(process.env.LUIS_MODEL_URL));
 
 bot.dialog('/helloworld', (session) => {
     session.send("Hello, World");
+    session.endDialog();
 })
 .triggerAction({
     matches: /^hello$/i
@@ -32,6 +33,7 @@ bot.dialog('/helloworld', (session) => {
 bot.dialog('/extract', (session, args) => {
     const place = args.intent.matched[1].trim();
     session.send(`Wherever you go, ${place} is in your heart`)
+    session.endDialog();
 })
 .triggerAction({
     matches: /^where is (.*)$/i
@@ -48,12 +50,29 @@ bot.dialog('/failing_tests_howlong', (session, args) => {
 
 
 bot.dialog('/rerun_tests', (session, args) => {
-    const status = args.intent.matched[1].trim();
+    session.privateConversationData.address = session.message.address;
+    const testName = args.intent.matched[1].trim();
     //const results = testresults.filter(test => test.status === status);
     session.send("Test scheduled for rerun. Check in later to check for the results of these tests.");
+    testRerun[0].name = testName;
+    testRerun[0].status = "running";
+    console.log("Name  " + testRerun[0].name + "status" + testRerun[0].status );
+    const interval = setInterval(() => {
+        //console.log("Here ");
+        if (testRerun[0].status != "running") {
+            const msg = new builder.Message().address(session.privateConversationData.address).text(testRerun[0].name + testRerun[0].status);
+            bot.send(msg);
+            clearInterval(interval);
+        }
+    }, 1*1000);
+
+    setTimeout(() => {
+        console.log("Setting status of test " + testRerun[0].name);
+        testRerun[0].status = "passed"
+    }, 4*1000);
 })
 .triggerAction({
-    matches: /rerun tests (.+)/i
+    matches: /rerun tests (.*)/i
 });
 
 bot.dialog('/luisList', (session, args) => {
@@ -162,24 +181,49 @@ const testcases: TestCase[] = [{
     description: "mailguard common configs"
 }];
 
-let tagName: string;
+let testRerun = [{name: "none", status: "none"}];
 
 bot.dialog('/addTag', [
     (session, args, next) => {
         const tagEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'tagName');
         if (tagEntity) {
-            tagName = tagEntity.entity;
+            session.dialogData.tagName = tagEntity.entity;
             return next();
         }
         builder.Prompts.text(session, "What do you want to call this tag?");
     },
     (session, args, next) => {
-        if (!tagName) {
-            tagName = args.response;
+        if (!session.dialogData.tagName) {
+            session.dialogData.tagName = args.response;
         }
-        session.send(`I created a tag called ${tagName}.`);
-    }
+        // If release tag and there are failed tests, prompt for confirmation
+        var re = new RegExp("release")
+        if (!re.test(session.dialogData.tagName)) {
+            return next();
+        }
+        builder.Prompts.confirm(session, "There are failed tests for this test run. Do you still want me to create a 'release' tag?");
+    }, 
+    (session, args, next) => {
+        console.log("Inside the prompt", args.response);
+        if (args.response === false) {
+            session.send("Ok. Won't create a tag yet. Cheers!");
+            return;
+        }
+        session.send(`I created a tag called ${session.dialogData.tagName}.`);
+    },
 ]).triggerAction({
     matches: 'Add Tag'
 });
 
+bot.dialog('/reminder', (session) => {
+    session.privateConversationData.address = session.message.address;
+    let a = 1
+    setInterval(() => {
+        if (a != 1) {
+            const msg = new builder.Message().address(session.privateConversationData.address).text("Here is your reminder");
+            bot.send(msg);
+        }
+    }, 1*1000);
+}).triggerAction({
+    matches: /^set reminder$/
+});

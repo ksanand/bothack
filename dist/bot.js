@@ -39,12 +39,28 @@ bot.dialog('/failing_tests_howlong', function (session, args) {
     matches: /(.+) fail duration/i
 });
 bot.dialog('/rerun_tests', function (session, args) {
-    var status = args.intent.matched[1].trim();
+    session.privateConversationData.address = session.message.address;
+    var testName = args.intent.matched[1].trim();
     //const results = testresults.filter(test => test.status === status);
     session.send("Test scheduled for rerun. Check in later to check for the results of these tests.");
+    testRerun[0].name = testName;
+    testRerun[0].status = "running";
+    console.log("Name  " + testRerun[0].name + "status" + testRerun[0].status);
+    var interval = setInterval(function () {
+        //console.log("Here ");
+        if (testRerun[0].status != "running") {
+            var msg = new builder.Message().address(session.privateConversationData.address).text(testRerun[0].name + testRerun[0].status);
+            bot.send(msg);
+            clearInterval(interval);
+        }
+    }, 1 * 1000);
+    setTimeout(function () {
+        console.log("Setting status of test " + testRerun[0].name);
+        testRerun[0].status = "passed";
+    }, 4 * 1000);
 })
     .triggerAction({
-    matches: /rerun tests (.+)/i
+    matches: /rerun tests (.*)/i
 });
 bot.dialog('/luisList', function (session, args) {
     var statusEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'test status');
@@ -133,22 +149,47 @@ var testcases = [{
         name: "common_configs.feature",
         description: "mailguard common configs"
     }];
-var tagName;
+var testRerun = [{ name: "none", status: "none" }];
 bot.dialog('/addTag', [
     function (session, args, next) {
         var tagEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'tagName');
         if (tagEntity) {
-            tagName = tagEntity.entity;
+            session.dialogData.tagName = tagEntity.entity;
             return next();
         }
         builder.Prompts.text(session, "What do you want to call this tag?");
     },
     function (session, args, next) {
-        if (!tagName) {
-            tagName = args.response;
+        if (!session.dialogData.tagName) {
+            session.dialogData.tagName = args.response;
         }
-        session.send("I created a tag called " + tagName + ".");
-    }
+        // If release tag and there are failed tests, prompt for confirmation
+        var re = new RegExp("release");
+        if (!re.test(session.dialogData.tagName)) {
+            return next();
+        }
+        builder.Prompts.confirm(session, "There are failed tests for this test run. Do you still want me to create a 'release' tag?");
+    },
+    function (session, args, next) {
+        console.log("Inside the prompt", args.response);
+        if (args.response === false) {
+            session.send("Ok. Won't create a tag yet. Cheers!");
+            return;
+        }
+        session.send("I created a tag called " + session.dialogData.tagName + ".");
+    },
 ]).triggerAction({
     matches: 'Add Tag'
+});
+bot.dialog('/reminder', function (session) {
+    session.privateConversationData.address = session.message.address;
+    var a = 1;
+    setInterval(function () {
+        if (a != 1) {
+            var msg = new builder.Message().address(session.privateConversationData.address).text("Here is your reminder");
+            bot.send(msg);
+        }
+    }, 1 * 1000);
+}).triggerAction({
+    matches: /^set reminder$/
 });
