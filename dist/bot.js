@@ -63,7 +63,7 @@ bot.dialog('/luisList', function (session, args) {
                 .title(results[i].name)
                 .text('Status: ' + results[i].step_failed)
                 .buttons([
-                builder.CardAction.imBack(session, 'test info ' + results[i].name, "Test Info")
+                builder.CardAction.messageBack(session, "").text('test info ' + results[i].name).title("Test Info")
             ]));
         }
         session.send(reply);
