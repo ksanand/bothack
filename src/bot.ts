@@ -19,6 +19,17 @@ const bot = new builder.UniversalBot(connector, (session) => {
     session.send("Sorry, I didn't understand that.")
 });
 
+// const re = /<at>.*<\/at> /g;
+
+// bot.use({
+//     botbuilder: (session, next) => {
+//         if (session.message.type === 'message') {
+//             session.message.text = session.message.text.replace(re, "");
+//             console.log(session.message.text);
+//         }
+//         next();
+//     }
+// });
 
 bot.recognizer(new builder.LuisRecognizer(process.env.LUIS_MODEL_URL));
 
